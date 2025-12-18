@@ -1,0 +1,46 @@
+services:
+
+  nginx:
+    build: ./docker/nginx/
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/config/:/etc/nginx/conf.d/
+      - ./:/var/www/hassan
+    networks:
+      - practice-network
+    healthcheck:
+      test: ['CMD']
+
+  mysql:
+    build: ./docker/mysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT}
+      MYSQL_ROOT_HOST: ${HOST}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql/initdb/:/docker-entrypoint-initdb.d
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - practice-network
+    healthcheck:
+      test: ['CMD']
+
+  php:
+    build: ./docker/php
+    volumes:
+      - ./:/var/www/hassan
+    networks:
+      - practice-network
+    healthcheck:
+      test: ['CMD']
+
+networks:
+  practice-network:
+    driver: bridge
+volumes:
+  mysql:
